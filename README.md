@@ -56,7 +56,8 @@ spanning 2015 to 2023.
 
 ## Interactive Dashboard
 
-Open `dashboard/aravali_dashboard.html` in any browser.  
+Open `dashboard/aravali_dashboard.html` in any browser.
+Or use this link 'https://huggingface.co/spaces/ArvindZ11/aravali-dashboard'.
 No installation required — all data is embedded.
 
 **Three tabs:**
