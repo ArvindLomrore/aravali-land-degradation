@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aravali Hills — Land Degradation Analysis Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#080c14;--surface:#0f1623;--panel:#141e2e;--border:#1e2d42;--accent:#2563eb;--accent2:#0ea5e9;--text:#e2e8f0;--muted:#64748b;--green:#22c55e;--yellow:#eab308;--orange:#f97316;--red:#ef4444;--font-mono:'Courier New',monospace;--font-sans:'Segoe UI',system-ui,sans-serif;--tab-h:48px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-sans);min-height:100vh;overflow-x:hidden}
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);border-bottom:1px solid var(--border);padding:20px 32px 16px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(37,99,235,0.06) 39px,rgba(37,99,235,0.06) 40px);pointer-events:none}
+.header-inner{position:relative;z-index:1}
+.header h1{font-size:22px;font-weight:700;letter-spacing:.5px;color:#f1f5f9}
+.header h1 span{color:var(--accent2)}
+.header-sub{font-size:12px;color:var(--muted);font-family:var(--font-mono);margin-top:4px;letter-spacing:.3px}
+.badge-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.badge{font-size:10.5px;font-family:var(--font-mono);padding:3px 10px;border-radius:20px;border:1px solid;letter-spacing:.3px}
+.badge-blue{border-color:#3b82f6;color:#93c5fd;background:rgba(59,130,246,.1)}
+.badge-green{border-color:#22c55e;color:#86efac;background:rgba(34,197,94,.1)}
+.badge-orange{border-color:#f97316;color:#fdba74;background:rgba(249,115,22,.1)}
+.badge-purple{border-color:#a855f7;color:#d8b4fe;background:rgba(168,85,247,.1)}
+.tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;gap:0}
+.tab-btn{height:var(--tab-h);padding:0 22px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;letter-spacing:.3px;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+.tab-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(14,165,233,.18);color:var(--accent2);font-size:10px;margin-right:7px;font-family:var(--font-mono)}
+.tab-content{display:none;padding:24px 28px}
+.tab-content.active{display:block}
+.controls-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-end}
+.ctrl-group{display:flex;flex-direction:column;gap:6px}
+.ctrl-label{font-size:10.5px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+select{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;outline:none;min-width:160px;transition:border-color .15s}
+select:hover,select:focus{border-color:var(--accent)}
+.btn{background:var(--accent);color:white;border:none;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;letter-spacing:.2px}
+.btn:hover{background:#1d4ed8}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text);background:transparent}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.chart-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;position:relative}
+.card-title{font-size:11px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title-accent{color:var(--accent2)}
+canvas{width:100%!important}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent2)}
+.stat-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:22px;font-weight:700;color:#f1f5f9;margin-top:4px;font-family:var(--font-mono)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.mk-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.mk-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.mk-metric{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;margin-bottom:6px}
+.mk-trend{font-size:15px;font-weight:700;font-family:var(--font-mono)}
+.mk-stats{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:4px}
+.mk-sig{font-size:9px;border-radius:4px;padding:2px 6px;display:inline-block;margin-top:4px}
+.mk-sig-yes{background:rgba(34,197,94,.15);color:#86efac;border:1px solid #22c55e}
+.mk-sig-no{background:rgba(100,116,139,.15);color:var(--muted);border:1px solid var(--border)}
+.risk-table{width:100%;border-collapse:collapse;font-size:13px;font-family:var(--font-mono)}
+.risk-table th{background:var(--surface);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.risk-table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.risk-table tr:last-child td{border-bottom:none}
+.risk-table tr:nth-child(even) td{background:rgba(255,255,255,.016)}
+.tier-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.tier-CRITICAL{background:rgba(220,38,38,.2);color:#fca5a5;border:1px solid #dc2626}
+.tier-HIGH{background:rgba(249,115,22,.2);color:#fdba74;border:1px solid #f97316}
+.tier-MODERATE{background:rgba(234,179,8,.2);color:#fde047;border:1px solid #eab308}
+.tier-LOW{background:rgba(34,197,94,.2);color:#86efac;border:1px solid #22c55e}
+.heatmap-wrap{overflow-x:auto}
+.hm-cell{border-radius:6px;padding:10px 8px;text-align:center;font-weight:700;cursor:default;transition:transform .12s;min-width:80px;font-family:var(--font-mono);font-size:12px}
+.hm-cell:hover{transform:scale(1.04)}
+.hm-district{color:var(--text);font-weight:600;text-align:left;padding-left:4px}
+.corr-note{background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);border-radius:8px;padding:12px 16px;font-size:12px;font-family:var(--font-mono);color:#93c5fd;margin-bottom:16px;line-height:1.6}
+.cluster-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.cluster-card{background:var(--panel);border-radius:10px;padding:16px 18px;border-left:4px solid}
+.cluster-card.red{border-color:var(--red)}
+.cluster-card.yellow{border-color:var(--yellow)}
+.cluster-card.green{border-color:var(--green)}
+.cluster-title{font-size:13px;font-weight:700;margin-bottom:8px}
+.cluster-members{font-size:11px;font-family:var(--font-mono);color:var(--muted);margin-bottom:10px}
+.cluster-stat{font-size:11px;color:#cbd5e1;line-height:1.8}
+.cluster-stat span{font-family:var(--font-mono)}
+.reg-stats{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-family:var(--font-mono);font-size:12px;line-height:2;color:#cbd5e1;min-width:200px}
+.reg-stats .rs-val{color:var(--accent2);font-weight:700}
+.reg-sig{color:var(--green)}
+.reg-nsig{color:var(--muted)}
+.footer{border-top:1px solid var(--border);padding:14px 28px;font-size:10.5px;font-family:var(--font-mono);color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="header-inner">
+<h1>🏔 Aravali Hills — <span>Land Degradation Analysis</span></h1>
+<div class="header-sub">Deliverable 2 · Interactive Dashboard · 5 Districts · 2015–2023</div>
+<div class="badge-row">
+<span class="badge badge-blue">Mann-Kendall Trends</span>
+<span class="badge badge-green">OLS Regression</span>
+<span class="badge badge-orange">K-Means Clustering</span>
+<span class="badge badge-purple">Degradation Index</span>
+</div>
+</div>
+</div>
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchTab(0)"><span class="tab-num">1</span>District Explorer</button>
+<button class="tab-btn" onclick="switchTab(1)"><span class="tab-num">2</span>Correlation Explorer</button>
+<button class="tab-btn" onclick="switchTab(2)"><span class="tab-num">3</span>Degradation Dashboard</button>
+</div>
+<div class="tab-content active" id="tab0">
+<div class="controls-row">
+<div class="ctrl-group"><span class="ctrl-label">District</span>
+<select id="sel-district" onchange="renderTab1()">
+<option value="Ajmer">Ajmer</option><option value="Bhilwara">Bhilwara</option>
+<option value="Jaipur">Jaipur</option><option value="Pali">Pali</option><option value="Udaipur">Udaipur</option>
+</select></div>
+<div class="ctrl-group"><span class="ctrl-label">Metric</span>
+<select id="sel-metric" onchange="renderTab1()">
+<option value="Mean_NDVI">NDVI</option>
+<option value="Mining_Area_sqkm">Mining Area (sq km)</option>
+<option value="Total_Forest">Forest Cover (sq km)</option>
+<option value="GW_Level_m">Groundwater Depth (m)</option>
+</select></div>
+</div>
+<div class="stat-row" id="stat-cards"></div>
+<div class="mk-row" id="mk-cards"></div>
+<div class="chart-card" style="margin-bottom:18px">
+<div class="card-title"><span class="card-title-accent">◈</span> Time Series — <span id="chart1-title">All Districts</span></div>
+<canvas id="chart-ts" height="100"></canvas>
+</div>
+<div class="chart-grid-4" id="mini-panels"></div>
+</div>
+<div class="tab-content" id="tab1">
+<div class="controls-row">
+<div class="ctrl-group"><span class="ctrl-label">X Axis</span>
+<select id="sel-x" onchange="renderTab2()">
+<option value="Mining_Area_sqkm">Mining Area (sq km)</option>
+<option value="Total_Forest">Forest Cover (sq km)</option>
+<option value="GW_Level_m">Groundwater Depth (m)</option>
+<option value="Scrub_Area">Scrub Area (sq km)</option>
+<option value="Forest_Density_Score">Forest Density Score</option>
+<option value="Mining_Forest_Ratio">Mining/Forest Ratio</option>
+</select></div>
+<div class="ctrl-group"><span class="ctrl-label">Y Axis</span>
+<select id="sel-y" onchange="renderTab2()">
+<option value="Mean_NDVI">NDVI</option>
+<option value="GW_Level_m">Groundwater Depth (m)</option>
+<option value="Total_Forest">Forest Cover (sq km)</option>
+<option value="Mining_Area_sqkm">Mining Area (sq km)</option>
+<option value="Forest_Density_Score">Forest Density Score</option>
+<option value="Forest_Change_pct">Forest Change %</option>
+</select></div>
+<div class="ctrl-group"><span class="ctrl-label">Filter</span>
+<select id="sel-dist-filter" onchange="renderTab2()">
+<option value="ALL">All Districts (pooled)</option>
+<option value="Ajmer">Ajmer only</option><option value="Bhilwara">Bhilwara only</option>
+<option value="Jaipur">Jaipur only</option><option value="Pali">Pali only</option><option value="Udaipur">Udaipur only</option>
+</select></div>
+</div>
+<div class="corr-note" id="corr-note">Select axes to explore relationships between degradation indicators.</div>
+<div class="chart-grid-2">
+<div class="chart-card">
+<div class="card-title"><span class="card-title-accent">◈</span> Scatter Plot + Regression Line</div>
+<canvas id="chart-scatter" height="200"></canvas>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div class="reg-stats" id="reg-stats-box"><div style="color:var(--accent2);font-weight:700;margin-bottom:8px;font-size:13px">REGRESSION STATISTICS</div><div>Select axes to compute.</div></div>
+<div class="chart-card"><div class="card-title"><span class="card-title-accent">◈</span> Pearson r — All Predictors vs NDVI</div><canvas id="chart-rbar" height="140"></canvas></div>
+</div>
+</div>
+<div class="chart-card"><div class="card-title"><span class="card-title-accent">◈</span> Correlation Heat Grid — Key Metrics</div><div id="corr-heat-grid" style="overflow-x:auto"></div></div>
+</div>
+<div class="tab-content" id="tab2">
+<div class="cluster-cards">
+<div class="cluster-card red"><div class="cluster-title" style="color:var(--red)">🔴 HIGH DEGRADATION</div><div class="cluster-members">Jaipur · Pali</div><div class="cluster-stat">GW Stress: <span>5/5 years</span><br>2023 DI: <span>0.693 / 0.649</span><br>Trend: <span style="color:#f87171">→ Stable (locked in stress)</span></div></div>
+<div class="cluster-card yellow"><div class="cluster-title" style="color:var(--yellow)">🟡 MODERATE STRESS</div><div class="cluster-members">Ajmer · Bhilwara</div><div class="cluster-stat">GW Stress: <span>0/5 years</span><br>2023 DI: <span>0.461 / 0.493</span><br>Trend: <span style="color:#86efac">▼ Improving</span></div></div>
+<div class="cluster-card green"><div class="cluster-title" style="color:var(--green)">🟢 LOW STRESS / RECOVERING</div><div class="cluster-members">Udaipur</div><div class="cluster-stat">GW Stress: <span>0/5 years</span><br>2023 DI: <span>0.095</span><br>Trend: <span style="color:#86efac">▼ Improving</span></div></div>
+</div>
+<div class="controls-row">
+<div class="ctrl-group"><span class="ctrl-label">Year</span>
+<select id="sel-year-di" onchange="renderTab3()">
+<option value="ALL">All Years</option>
+<option value="2015">2015</option><option value="2017">2017</option>
+<option value="2019">2019</option><option value="2021">2021</option>
+<option value="2023" selected>2023</option>
+</select></div>
+</div>
+<div class="chart-card" style="margin-bottom:18px">
+<div class="card-title"><span class="card-title-accent">◈</span> Composite Degradation Index — Heatmap (Districts × Years)</div>
+<div class="heatmap-wrap" id="di-heatmap"></div>
+</div>
+<div class="chart-grid-2">
+<div class="chart-card"><div class="card-title"><span class="card-title-accent">◈</span> DI Trajectories 2015–2023</div><canvas id="chart-di-traj" height="160"></canvas></div>
+<div class="chart-card"><div class="card-title"><span class="card-title-accent">◈</span> DI Component Breakdown — 2023</div><canvas id="chart-di-components" height="160"></canvas></div>
+</div>
+<div class="chart-card">
+<div class="card-title"><span class="card-title-accent">◈</span> Risk Ranking Table — <span id="risk-table-year">2023</span></div>
+<table class="risk-table" id="risk-table"></table>
+</div>
+</div>
+<div class="footer">
+<span>Aravali Hills Land Degradation Study · Rajasthan, India · 2015–2023</span>
+<span>Data: FSI Forest Cover · CGWB Groundwater · GEE Satellite (NDVI/LULC)</span>
+<span>Methods: Mann-Kendall · OLS Regression · K-Means · PCA · Degradation Index</span>
+</div>
+<script>
+const CLEAN=[
+{d:'Ajmer',yr:2015,ndvi:.257982,mining:421.4133,forest:284,gw:10.5,scrub:216,fds:.568,mfr:1.4838,fc:0,imp:false},
+{d:'Ajmer',yr:2017,ndvi:.277213,mining:40.3686,forest:299,gw:10.71,scrub:202,fds:.5968,mfr:.135,fc:5.28,imp:false},
+{d:'Ajmer',yr:2019,ndvi:.233103,mining:44.3457,forest:305.11,gw:7.7,scrub:204.64,fds:.5985,mfr:.1453,fc:7.43,imp:false},
+{d:'Ajmer',yr:2021,ndvi:.295606,mining:39.9141,forest:331.56,gw:4.75,scrub:175.72,fds:.6536,mfr:.1204,fc:16.75,imp:false},
+{d:'Ajmer',yr:2023,ndvi:.308642,mining:42.6303,forest:333.01,gw:9.11,scrub:276.83,fds:.5461,mfr:.128,fc:17.26,imp:true},
+{d:'Bhilwara',yr:2015,ndvi:.271387,mining:591.9435,forest:227,gw:11.48,scrub:129,fds:.6376,mfr:2.6077,fc:0,imp:false},
+{d:'Bhilwara',yr:2017,ndvi:.332002,mining:74.5911,forest:221,gw:8.88,scrub:158,fds:.5831,mfr:.3375,fc:-2.64,imp:false},
+{d:'Bhilwara',yr:2019,ndvi:.286373,mining:59.8185,forest:224.19,gw:3.28,scrub:176.39,fds:.5597,mfr:.2668,fc:-1.24,imp:false},
+{d:'Bhilwara',yr:2021,ndvi:.34199,mining:60.4764,forest:224.31,gw:5.87,scrub:189.76,fds:.5417,mfr:.2696,fc:-1.19,imp:false},
+{d:'Bhilwara',yr:2023,ndvi:.335526,mining:152.4609,forest:236.97,gw:12.14,scrub:248.66,fds:.488,mfr:.6434,fc:4.39,imp:false},
+{d:'Jaipur',yr:2015,ndvi:.275045,mining:201.2841,forest:643,gw:30.98,scrub:412,fds:.6095,mfr:.313,fc:0,imp:false},
+{d:'Jaipur',yr:2017,ndvi:.258619,mining:150.5511,forest:552,gw:32.56,scrub:286,fds:.6587,mfr:.2727,fc:-14.15,imp:false},
+{d:'Jaipur',yr:2019,ndvi:.258984,mining:85.0644,forest:552.76,gw:32,scrub:285.39,fds:.6595,mfr:.1539,fc:-14.03,imp:false},
+{d:'Jaipur',yr:2021,ndvi:.27923,mining:438.1596,forest:554.86,gw:34.52,scrub:272.85,fds:.6704,mfr:.7897,fc:-13.71,imp:false},
+{d:'Jaipur',yr:2023,ndvi:.313517,mining:274.7853,forest:564.58,gw:33.76,scrub:318.6,fds:.6393,mfr:.4867,fc:-12.2,imp:false},
+{d:'Pali',yr:2015,ndvi:.295654,mining:164.6289,forest:691,gw:30.98,scrub:256,fds:.7297,mfr:.2382,fc:0,imp:false},
+{d:'Pali',yr:2017,ndvi:.315746,mining:100.7001,forest:674,gw:32.56,scrub:308,fds:.6864,mfr:.1494,fc:-2.46,imp:false},
+{d:'Pali',yr:2019,ndvi:.237455,mining:95.7546,forest:674.85,gw:32,scrub:323.64,fds:.6759,mfr:.1419,fc:-2.34,imp:false},
+{d:'Pali',yr:2021,ndvi:.27854,mining:164.1339,forest:700.86,gw:34.52,scrub:357.6,fds:.6622,mfr:.2342,fc:1.43,imp:false},
+{d:'Pali',yr:2023,ndvi:.285392,mining:95.0337,forest:692.87,gw:33.76,scrub:453.45,fds:.6044,mfr:.1372,fc:.27,imp:false},
+{d:'Udaipur',yr:2015,ndvi:.362418,mining:55.2663,forest:3120,gw:6.71,scrub:454,fds:.873,mfr:.0177,fc:0,imp:false},
+{d:'Udaipur',yr:2017,ndvi:.41624,mining:42.5943,forest:2764,gw:6.38,scrub:270,fds:.911,mfr:.0154,fc:-11.41,imp:false},
+{d:'Udaipur',yr:2019,ndvi:.302646,mining:35.0883,forest:2757.54,gw:3.95,scrub:224.36,fds:.9248,mfr:.0127,fc:-11.62,imp:false},
+{d:'Udaipur',yr:2021,ndvi:.373563,mining:31.4271,forest:2753.39,gw:6.85,scrub:239.53,fds:.92,mfr:.0114,fc:-11.75,imp:false},
+{d:'Udaipur',yr:2023,ndvi:.400192,mining:27.288,forest:2766.3,gw:9.24,scrub:259.62,fds:.9142,mfr:.0099,fc:-11.34,imp:false}
+];
+const MK=[
+{d:'Ajmer',metric:'NDVI',tau:.6,p:.2207,trend:'↑ Increasing',sig:false},
+{d:'Ajmer',metric:'Mining Area',tau:-.4,p:.4624,trend:'↓ Decreasing',sig:false},
+{d:'Ajmer',metric:'Total Forest',tau:1.0,p:.0275,trend:'↑ Increasing ✱',sig:true},
+{d:'Ajmer',metric:'GW Depth',tau:-.4,p:.4624,trend:'↓ Decreasing',sig:false},
+{d:'Bhilwara',metric:'NDVI',tau:.6,p:.2207,trend:'↑ Increasing',sig:false},
+{d:'Bhilwara',metric:'Mining Area',tau:-.2,p:.8065,trend:'↓ Decreasing',sig:false},
+{d:'Bhilwara',metric:'Total Forest',tau:.4,p:.4624,trend:'↑ Increasing',sig:false},
+{d:'Bhilwara',metric:'GW Depth',tau:0,p:1.0,trend:'→ No trend',sig:false},
+{d:'Jaipur',metric:'NDVI',tau:.6,p:.2207,trend:'↑ Increasing',sig:false},
+{d:'Jaipur',metric:'Mining Area',tau:.2,p:.8065,trend:'↑ Increasing',sig:false},
+{d:'Jaipur',metric:'Total Forest',tau:.2,p:.8065,trend:'↑ Increasing',sig:false},
+{d:'Jaipur',metric:'GW Depth',tau:.6,p:.2207,trend:'↑ Increasing',sig:false},
+{d:'Pali',metric:'NDVI',tau:-.2,p:.8065,trend:'↓ Decreasing',sig:false},
+{d:'Pali',metric:'Mining Area',tau:-.6,p:.2207,trend:'↓ Decreasing',sig:false},
+{d:'Pali',metric:'Total Forest',tau:.4,p:.4624,trend:'↑ Increasing',sig:false},
+{d:'Pali',metric:'GW Depth',tau:.6,p:.2207,trend:'↑ Increasing',sig:false},
+{d:'Udaipur',metric:'NDVI',tau:.2,p:.8065,trend:'↑ Increasing',sig:false},
+{d:'Udaipur',metric:'Mining Area',tau:-1.0,p:.0275,trend:'↓ Decreasing ✱',sig:true},
+{d:'Udaipur',metric:'Total Forest',tau:-.4,p:.4624,trend:'↓ Decreasing',sig:false},
+{d:'Udaipur',metric:'GW Depth',tau:.4,p:.4624,trend:'↑ Increasing',sig:false}
+];
+const DI=[
+{d:'Ajmer',yr:2015,di:.7245,ndvi_c:.864,mine_c:.698,for_c:.978,gw_c:.231,tier:'CRITICAL'},
+{d:'Ajmer',yr:2017,di:.5244,ndvi_c:.759,mine_c:.023,for_c:.973,gw_c:.238,tier:'HIGH'},
+{d:'Ajmer',yr:2019,di:.5786,ndvi_c:1.0,mine_c:.030,for_c:.971,gw_c:.141,tier:'HIGH'},
+{d:'Ajmer',yr:2021,di:.4531,ndvi_c:.659,mine_c:.022,for_c:.962,gw_c:.047,tier:'MODERATE'},
+{d:'Ajmer',yr:2023,di:.4607,ndvi_c:.588,mine_c:.027,for_c:.961,gw_c:.187,tier:'MODERATE'},
+{d:'Bhilwara',yr:2015,di:.7893,ndvi_c:.791,mine_c:1.0,for_c:.998,gw_c:.262,tier:'CRITICAL'},
+{d:'Bhilwara',yr:2017,di:.4448,ndvi_c:.460,mine_c:.084,for_c:1.0,gw_c:.179,tier:'MODERATE'},
+{d:'Bhilwara',yr:2019,di:.4769,ndvi_c:.709,mine_c:.058,for_c:.999,gw_c:0,tier:'MODERATE'},
+{d:'Bhilwara',yr:2021,di:.4026,ndvi_c:.405,mine_c:.059,for_c:.999,gw_c:.083,tier:'MODERATE'},
+{d:'Bhilwara',yr:2023,di:.493,ndvi_c:.441,mine_c:.222,for_c:.994,gw_c:.284,tier:'MODERATE'},
+{d:'Jaipur',yr:2015,di:.6993,ndvi_c:.771,mine_c:.308,for_c:.854,gw_c:.887,tier:'CRITICAL'},
+{d:'Jaipur',yr:2017,di:.7217,ndvi_c:.861,mine_c:.218,for_c:.886,gw_c:.937,tier:'CRITICAL'},
+{d:'Jaipur',yr:2019,di:.6884,ndvi_c:.859,mine_c:.102,for_c:.886,gw_c:.919,tier:'CRITICAL'},
+{d:'Jaipur',yr:2021,di:.8276,ndvi_c:.748,mine_c:.728,for_c:.885,gw_c:1.0,tier:'CRITICAL'},
+{d:'Jaipur',yr:2023,di:.6934,ndvi_c:.561,mine_c:.438,for_c:.881,gw_c:.976,tier:'CRITICAL'},
+{d:'Pali',yr:2015,di:.6451,ndvi_c:.658,mine_c:.243,for_c:.838,gw_c:.887,tier:'HIGH'},
+{d:'Pali',yr:2017,di:.5955,ndvi_c:.549,mine_c:.130,for_c:.844,gw_c:.937,tier:'HIGH'},
+{d:'Pali',yr:2019,di:.7179,ndvi_c:.976,mine_c:.121,for_c:.843,gw_c:.919,tier:'CRITICAL'},
+{d:'Pali',yr:2021,di:.6948,ndvi_c:.752,mine_c:.242,for_c:.834,gw_c:1.0,tier:'CRITICAL'},
+{d:'Pali',yr:2023,di:.6488,ndvi_c:.714,mine_c:.120,for_c:.837,gw_c:.976,tier:'HIGH'},
+{d:'Udaipur',yr:2015,di:.1225,ndvi_c:.294,mine_c:.050,for_c:0,gw_c:.110,tier:'LOW'},
+{d:'Udaipur',yr:2017,di:.0573,ndvi_c:0,mine_c:.027,for_c:.123,gw_c:.099,tier:'LOW'},
+{d:'Udaipur',yr:2019,di:.2251,ndvi_c:.620,mine_c:.014,for_c:.125,gw_c:.021,tier:'LOW'},
+{d:'Udaipur',yr:2021,di:.1262,ndvi_c:.233,mine_c:.007,for_c:.126,gw_c:.114,tier:'LOW'},
+{d:'Udaipur',yr:2023,di:.0949,ndvi_c:.088,mine_c:0,for_c:.122,gw_c:.191,tier:'LOW'}
+];
+const DISTRICTS=['Ajmer','Bhilwara','Jaipur','Pali','Udaipur'];
+const YEARS=[2015,2017,2019,2021,2023];
+const DC={Ajmer:'#60a5fa',Bhilwara:'#f472b6',Jaipur:'#34d399',Pali:'#fb923c',Udaipur:'#a78bfa'};
+const MM={Mean_NDVI:'ndvi',Mining_Area_sqkm:'mining',Total_Forest:'forest',GW_Level_m:'gw',Scrub_Area:'scrub',Forest_Density_Score:'fds',Mining_Forest_Ratio:'mfr',Forest_Change_pct:'fc'};
+const ML={Mean_NDVI:'NDVI',Mining_Area_sqkm:'Mining Area (sq km)',Total_Forest:'Forest Cover (sq km)',GW_Level_m:'GW Depth (m)',Scrub_Area:'Scrub Area (sq km)',Forest_Density_Score:'Forest Density',Mining_Forest_Ratio:'Mining/Forest Ratio',Forest_Change_pct:'Forest Change %'};
+const charts={};
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
+Chart.defaults.color='#64748b';Chart.defaults.borderColor='#1e2d42';Chart.defaults.font.family="'Courier New',monospace";
+const bO={responsive:true,animation:{duration:350},plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}},scales:{x:{grid:{color:'rgba(30,45,66,0.8)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(30,45,66,0.8)'},ticks:{color:'#64748b'}}}};
+function gv(r,m){return r[MM[m]]}
+function pearsonR(xs,ys){const n=xs.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;const num=xs.map((x,i)=>(x-mx)*(ys[i]-my)).reduce((a,b)=>a+b);const dx=Math.sqrt(xs.map(x=>(x-mx)**2).reduce((a,b)=>a+b)),dy=Math.sqrt(ys.map(y=>(y-my)**2).reduce((a,b)=>a+b));return dx*dy===0?0:num/(dx*dy)}
+function ols(xs,ys){const n=xs.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;const ssxy=xs.map((x,i)=>(x-mx)*(ys[i]-my)).reduce((a,b)=>a+b),ssxx=xs.map(x=>(x-mx)**2).reduce((a,b)=>a+b);const b1=ssxx===0?0:ssxy/ssxx,b0=my-b1*mx;const yh=xs.map(x=>b0+b1*x),sst=ys.map(y=>(y-my)**2).reduce((a,b)=>a+b),ssr=ys.map((y,i)=>(y-yh[i])**2).reduce((a,b)=>a+b);return{b0,b1,r2:sst===0?0:1-ssr/sst,r:pearsonR(xs,ys)}}
+function diColor(d){if(d>=.65)return'#dc2626';if(d>=.5)return'#f97316';if(d>=.35)return'#eab308';return'#22c55e'}
+function diTC(d){return d>.45?'white':'#111'}
+function switchTab(i){document.querySelectorAll('.tab-content').forEach((e,j)=>e.classList.toggle('active',i===j));document.querySelectorAll('.tab-btn').forEach((e,j)=>e.classList.toggle('active',i===j));if(i===0)renderTab1();if(i===1)renderTab2();if(i===2)renderTab3()}
+function renderTab1(){const dist=document.getElementById('sel-district').value,metric=document.getElementById('sel-metric').value;renderStatCards(dist,metric);renderMKCards(dist);renderTimeSeries(metric);renderMiniPanels(dist)}
+function renderStatCards(dist,metric){const last=CLEAN.filter(r=>r.d===dist).sort((a,b)=>b.yr-a.yr)[0],first=CLEAN.filter(r=>r.d===dist).sort((a,b)=>a.yr-b.yr)[0],di23=DI.find(r=>r.d===dist&&r.yr===2023);const delta=last&&first?gv(last,metric)-gv(first,metric):null;document.getElementById('stat-cards').innerHTML=`<div class="stat-card"><div class="stat-label">${ML[metric]} — 2023</div><div class="stat-value" style="font-size:18px">${last?gv(last,metric).toFixed(3):'—'}</div><div class="stat-sub">${last?.imp?'★ GW imputed':'observed'}</div></div><div class="stat-card"><div class="stat-label">Change 2015→2023</div><div class="stat-value" style="font-size:18px;color:${delta!==null?delta>0?'#f87171':'#86efac':'#94a3b8'}">${delta!==null?(delta>0?'+':'')+delta.toFixed(3):'—'}</div><div class="stat-sub">absolute delta</div></div><div class="stat-card"><div class="stat-label">DI Score 2023</div><div class="stat-value" style="font-size:18px;color:${di23?diColor(di23.di):'#94a3b8'}">${di23?di23.di.toFixed(4):'—'}</div><div class="stat-sub">${di23?di23.tier:'n/a'}</div></div><div class="stat-card"><div class="stat-label">MK Sig. Trends</div><div class="stat-value" style="font-size:18px">${MK.filter(r=>r.d===dist&&r.sig).length}/4</div><div class="stat-sub">p &lt; 0.05</div></div>`}
+function renderMKCards(dist){const ms=['NDVI','Mining Area','Total Forest','GW Depth'];document.getElementById('mk-cards').innerHTML=ms.map(m=>{const row=MK.find(r=>r.d===dist&&r.metric===m);if(!row)return'';const up=row.trend.includes('↑'),dn=row.trend.includes('↓'),col=up?'#34d399':dn?'#f87171':'#94a3b8';return`<div class="mk-card"><div class="mk-metric">${m}</div><div class="mk-trend" style="color:${col}">${row.trend}</div><div class="mk-stats">τ = ${row.tau.toFixed(2)} | p = ${row.p.toFixed(4)}</div><span class="mk-sig ${row.sig?'mk-sig-yes':'mk-sig-no'}">${row.sig?'✱ Significant (p<0.05)':'not significant'}</span></div>`}).join('')}
+function renderTimeSeries(metric){dc('ts');const ctx=document.getElementById('chart-ts').getContext('2d');const key=MM[metric];charts['ts']=new Chart(ctx,{type:'line',data:{labels:YEARS,datasets:DISTRICTS.map(d=>({label:d,data:CLEAN.filter(r=>r.d===d).sort((a,b)=>a.yr-b.yr).map(r=>r[key]),borderColor:DC[d],backgroundColor:DC[d]+'22',pointRadius:5,pointHoverRadius:8,tension:.25,borderWidth:2.5,fill:false}))},options:{...bO,scales:{x:{...bO.scales.x,title:{display:true,text:'Year',color:'#64748b'}},y:{...bO.scales.y,title:{display:true,text:ML[metric],color:'#64748b'}}}}}); document.getElementById('chart1-title').textContent=ML[metric]+' — All Districts'}
+function renderMiniPanels(dist){const ms=['Mean_NDVI','Mining_Area_sqkm','Total_Forest','GW_Level_m'],ls=['NDVI','Mining (sq km)','Forest (sq km)','GW Depth (m)'],cs=['#34d399','#f87171','#60a5fa','#a78bfa'],c=document.getElementById('mini-panels');c.innerHTML='';ms.forEach((m,i)=>{const div=document.createElement('div');div.className='chart-card';div.innerHTML=`<div class="card-title"><span style="color:${cs[i]}">◈</span> ${ls[i]}</div><canvas id="mini-${i}" height="120"></canvas>`;c.appendChild(div);setTimeout(()=>{const ctx=document.getElementById('mini-'+i).getContext('2d');const key=MM[m];const dists=[dist];new Chart(ctx,{type:'line',data:{labels:YEARS,datasets:dists.map(d=>({label:d,data:CLEAN.filter(r=>r.d===d).sort((a,b)=>a.yr-b.yr).map(r=>r[key]),borderColor:DC[d],pointRadius:3,tension:.25,borderWidth:2,fill:false}))},options:{responsive:true,animation:{duration:200},plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(30,45,66,0.6)'},ticks:{color:'#475569',font:{size:9}}},y:{grid:{color:'rgba(30,45,66,0.6)'},ticks:{color:'#475569',font:{size:9}}}}}})},50)})}
+function renderTab2(){const xC=document.getElementById('sel-x').value,yC=document.getElementById('sel-y').value,dF=document.getElementById('sel-dist-filter').value;const data=dF==='ALL'?CLEAN:CLEAN.filter(r=>r.d===dF);const xs=data.map(r=>r[MM[xC]]),ys=data.map(r=>r[MM[yC]]),reg=ols(xs,ys);const dir=reg.r>0?'positive':reg.r<0?'negative':'none';document.getElementById('corr-note').innerHTML=`<b style="color:#93c5fd">${ML[xC]}</b> vs <b style="color:#93c5fd">${ML[yC]}</b> &nbsp;|&nbsp; r = <b style="color:${Math.abs(reg.r)>.5?'#34d399':'#94a3b8'}">${reg.r.toFixed(3)}</b> &nbsp;|&nbsp; R² = <b>${reg.r2.toFixed(3)}</b> &nbsp;|&nbsp; ${dir} correlation &nbsp;|&nbsp; n = ${data.length}`;document.getElementById('reg-stats-box').innerHTML=`<div style="color:var(--accent2);font-weight:700;margin-bottom:8px;font-size:13px">REGRESSION STATISTICS</div><div>β₀ (intercept): <span class="rs-val">${reg.b0.toFixed(5)}</span></div><div>β₁ (slope): <span class="rs-val">${reg.b1.toFixed(6)}</span></div><div>Pearson r: <span class="rs-val">${reg.r.toFixed(4)}</span></div><div>R²: <span class="rs-val">${reg.r2.toFixed(4)}</span> (${(reg.r2*100).toFixed(1)}% variance explained)</div><div>n: <span class="rs-val">${data.length}</span></div><div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><span class="${Math.abs(reg.r)>.5?'reg-sig':'reg-nsig'}">${Math.abs(reg.r)>.65?'✅ Strong':Math.abs(reg.r)>.45?'⚡ Moderate':'○ Weak'} correlation</span></div>`;dc('scatter');const ctx=document.getElementById('chart-scatter').getContext('2d');const pds=DISTRICTS.map(d=>{const rows=data.filter(r=>r.d===d);return{label:d,data:rows.map(r=>({x:r[MM[xC]],y:r[MM[yC]],yr:r.yr})),backgroundColor:DC[d]+'cc',borderColor:DC[d],pointRadius:7,pointHoverRadius:10,showLine:false}}).filter(ds=>ds.data.length>0);const xMn=Math.min(...xs),xMx=Math.max(...xs);charts['scatter']=new Chart(ctx,{type:'scatter',data:{datasets:[...pds,{label:`Regression (r=${reg.r.toFixed(2)})`,data:[{x:xMn,y:reg.b0+reg.b1*xMn},{x:xMx,y:reg.b0+reg.b1*xMx}],borderColor:'#fbbf24',borderWidth:2,borderDash:[6,3],pointRadius:0,showLine:true,fill:false}]},options:{responsive:true,animation:{duration:300},plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}},tooltip:{callbacks:{label:ctx=>{const d=ctx.raw;return`${ctx.dataset.label}: (${d.x?.toFixed(3)}, ${d.y?.toFixed(3)}) ${d.yr?'['+d.yr+']':''}`}}}},scales:{x:{grid:{color:'rgba(30,45,66,0.8)'},ticks:{color:'#64748b'},title:{display:true,text:ML[xC],color:'#64748b'}},y:{grid:{color:'rgba(30,45,66,0.8)'},ticks:{color:'#64748b'},title:{display:true,text:ML[yC],color:'#64748b'}}}}});dc('rbar');const ctx2=document.getElementById('chart-rbar').getContext('2d');const preds=['Mining_Area_sqkm','Total_Forest','GW_Level_m','Scrub_Area','Forest_Density_Score','Mining_Forest_Ratio'];const rVals=preds.map(p=>+pearsonR(CLEAN.map(r=>r[MM[p]]),CLEAN.map(r=>r.ndvi)).toFixed(3));charts['rbar']=new Chart(ctx2,{type:'bar',data:{labels:preds.map(p=>ML[p]),datasets:[{data:rVals,backgroundColor:rVals.map(r=>r>0?'rgba(34,197,94,0.7)':'rgba(239,68,68,0.7)'),borderColor:rVals.map(r=>r>0?'#22c55e':'#ef4444'),borderWidth:1.5}]},options:{responsive:true,animation:{duration:200},plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#475569',font:{size:8},maxRotation:30},grid:{color:'rgba(30,45,66,0.6)'}},y:{min:-1,max:1,grid:{color:'rgba(30,45,66,0.6)'},ticks:{color:'#64748b'},title:{display:true,text:'Pearson r → NDVI',color:'#64748b',font:{size:9}}}}}});renderCorrHeatGrid()}
+function renderCorrHeatGrid(){const cols=['Mean_NDVI','Mining_Area_sqkm','Total_Forest','GW_Level_m','Forest_Density_Score','Mining_Forest_Ratio'],sh=['NDVI','Mining','Forest','GW','FD Score','M/F Ratio'];let html='<table style="width:100%;border-collapse:separate;border-spacing:3px;font-family:monospace;font-size:11px;"><tr><th></th>'+sh.map(s=>`<th style="color:#64748b;text-align:center;padding:3px 6px">${s}</th>`).join('')+'</tr>';cols.forEach((c1,i)=>{html+=`<tr><th style="color:#64748b;text-align:right;padding:3px 8px">${sh[i]}</th>`;cols.forEach((c2,j)=>{const xs=CLEAN.map(r=>r[MM[c1]]),ys=CLEAN.map(r=>r[MM[c2]]),r=+pearsonR(xs,ys).toFixed(2),int=Math.abs(r);let bg,tc;if(i===j){bg='#1e2d42';tc='#64748b'}else if(r>0){bg=`rgba(34,197,94,${int*.8})`;tc=int>.5?'white':'#e2e8f0'}else{bg=`rgba(239,68,68,${int*.8})`;tc=int>.5?'white':'#e2e8f0'}const border=Math.abs(r)>=.5&&i!==j?'1px solid #fbbf24':'none';html+=`<td style="background:${bg};color:${tc};text-align:center;padding:7px 4px;border-radius:4px;border:${border};font-weight:${Math.abs(r)>.5?700:400}">${r.toFixed(2)}</td>`});html+='</tr>'});html+='</table><div style="font-size:10px;color:#64748b;margin-top:8px;font-family:monospace">Gold border = |r| ≥ 0.50 · Green = positive · Red = negative</div>';document.getElementById('corr-heat-grid').innerHTML=html}
+function renderTab3(){renderDIHeatmap();renderDITrajectory();renderDIComponents();renderRiskTable()}
+function renderDIHeatmap(){const sd=['Jaipur','Pali','Bhilwara','Ajmer','Udaipur'],cl={Ajmer:'🟡 MOD',Bhilwara:'🟡 MOD',Jaipur:'🔴 HIGH',Pali:'🔴 HIGH',Udaipur:'🟢 LOW'};let html='<table style="width:100%;border-collapse:separate;border-spacing:4px;font-family:monospace;font-size:12px"><tr><th style="color:#64748b;text-align:left">District</th>'+YEARS.map(y=>`<th style="color:#64748b;text-align:center;padding:4px 8px">${y}</th>`).join('')+'<th style="color:#64748b;text-align:center">Cluster</th></tr>';sd.forEach(d=>{html+=`<tr><td style="color:${DC[d]};font-weight:700;padding:4px 8px">${d}</td>`;YEARS.forEach(yr=>{const row=DI.find(r=>r.d===d&&r.yr===yr),di=row?row.di:0,bg=diColor(di),tc=diTC(di);html+=`<td class="hm-cell" style="background:${bg};color:${tc}" title="${d} ${yr}: ${di.toFixed(4)} [${row?.tier}]">${di.toFixed(3)}<br><small style="font-size:9px">${row?.tier||''}</small></td>`});html+=`<td style="color:#94a3b8;font-size:11px;padding:6px 10px">${cl[d]||''}</td></tr>`});html+='</table>';document.getElementById('di-heatmap').innerHTML=html}
+function renderDITrajectory(){dc('ditraj');const ctx=document.getElementById('chart-di-traj').getContext('2d');const sd=['Jaipur','Pali','Bhilwara','Ajmer','Udaipur'];charts['ditraj']=new Chart(ctx,{type:'line',data:{labels:YEARS,datasets:sd.map(d=>({label:d,data:YEARS.map(yr=>DI.find(r=>r.d===d&&r.yr===yr)?.di||0),borderColor:DC[d],backgroundColor:DC[d]+'18',pointRadius:5,pointHoverRadius:8,tension:.25,borderWidth:2.5,fill:false}))},options:{...bO,scales:{x:{...bO.scales.x},y:{...bO.scales.y,min:0,max:1,title:{display:true,text:'Degradation Index',color:'#64748b'}}}}})}
+function renderDIComponents(){dc('dicomp');const ctx=document.getElementById('chart-di-components').getContext('2d');const sd=['Jaipur','Pali','Bhilwara','Ajmer','Udaipur'];const ck=['ndvi_c','mine_c','for_c','gw_c'],cl2=['NDVI (30%)','Mining (25%)','Forest (25%)','GW (20%)'],cc=['#4ade80aa','#f87171aa','#60a5faaa','#c084fcaa'],cb=['#4ade80','#f87171','#60a5fa','#c084fc'],cw=[.30,.25,.25,.20];charts['dicomp']=new Chart(ctx,{type:'bar',data:{labels:sd,datasets:ck.map((k,i)=>({label:cl2[i],data:sd.map(d=>{const row=DI.find(r=>r.d===d&&r.yr===2023);return row?+(row[k]*cw[i]).toFixed(4):0}),backgroundColor:cc[i],borderColor:cb[i],borderWidth:1}))},options:{responsive:true,animation:{duration:350},plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}}},scales:{x:{stacked:true,grid:{color:'rgba(30,45,66,0.6)'},ticks:{color:'#64748b'}},y:{stacked:true,grid:{color:'rgba(30,45,66,0.6)'},ticks:{color:'#64748b'},min:0,max:1,title:{display:true,text:'Weighted DI',color:'#64748b'}}}}})}
+function renderRiskTable(){const yrS=document.getElementById('sel-year-di').value;document.getElementById('risk-table-year').textContent=yrS==='ALL'?'All Years':yrS;let rows=yrS==='ALL'?DI:DI.filter(r=>r.yr===parseInt(yrS));rows=[...rows].sort((a,b)=>b.di-a.di);const cL={Ajmer:'🟡 MODERATE',Bhilwara:'🟡 MODERATE',Jaipur:'🔴 HIGH',Pali:'🔴 HIGH',Udaipur:'🟢 LOW'};const thead=`<thead><tr><th>#</th><th>District</th>${yrS==='ALL'?'<th>Year</th>':''}<th>DI Score</th><th>Risk Tier</th><th>NDVI (30%)</th><th>Mining (25%)</th><th>Forest (25%)</th><th>GW (20%)</th><th>Cluster</th></tr></thead>`;const tbody='<tbody>'+rows.map((r,i)=>`<tr><td style="color:var(--muted)">${i+1}</td><td style="font-weight:700;color:${DC[r.d]}">${r.d}</td>${yrS==='ALL'?`<td style="color:var(--muted)">${r.yr}</td>`:''}<td style="font-weight:700;color:${diColor(r.di)}">${r.di.toFixed(4)}</td><td><span class="tier-badge tier-${r.tier}">${r.tier}</span></td><td style="color:#94a3b8">${r.ndvi_c.toFixed(3)}</td><td style="color:#94a3b8">${r.mine_c.toFixed(3)}</td><td style="color:#94a3b8">${r.for_c.toFixed(3)}</td><td style="color:#94a3b8">${r.gw_c.toFixed(3)}</td><td style="font-size:11px;color:#94a3b8">${cL[r.d]||''}</td></tr>`).join('')+'</tbody>';document.getElementById('risk-table').innerHTML=thead+tbody}
+window.addEventListener('DOMContentLoaded',()=>{renderTab1();renderCorrHeatGrid();renderTab3()});
+</script>
+</body>
+</html>
