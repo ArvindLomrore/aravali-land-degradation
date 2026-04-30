@@ -1,0 +1,21 @@
+District,Metric,Metric_Col,S,Var_S,Z,Tau,P_Value,Trend,Significant
+Ajmer,NDVI,Mean_NDVI,6,16.6667,1.2247,0.6,0.2207,↑ Increasing,False
+Ajmer,Mining Area,Mining_Area_sqkm,-4,16.6667,-0.7348,-0.4,0.4624,↓ Decreasing,False
+Ajmer,Total Forest,Total_Forest,10,16.6667,2.2045,1.0,0.0275,↑ Increasing*,True
+Ajmer,GW Depth,GW_Level_m,-4,16.6667,-0.7348,-0.4,0.4624,↓ Decreasing,False
+Bhilwara,NDVI,Mean_NDVI,6,16.6667,1.2247,0.6,0.2207,↑ Increasing,False
+Bhilwara,Mining Area,Mining_Area_sqkm,-2,16.6667,-0.2449,-0.2,0.8065,↓ Decreasing,False
+Bhilwara,Total Forest,Total_Forest,4,16.6667,0.7348,0.4,0.4624,↑ Increasing,False
+Bhilwara,GW Depth,GW_Level_m,0,16.6667,0.0,0.0,1.0,→ No trend,False
+Jaipur,NDVI,Mean_NDVI,6,16.6667,1.2247,0.6,0.2207,↑ Increasing,False
+Jaipur,Mining Area,Mining_Area_sqkm,2,16.6667,0.2449,0.2,0.8065,↑ Increasing,False
+Jaipur,Total Forest,Total_Forest,2,16.6667,0.2449,0.2,0.8065,↑ Increasing,False
+Jaipur,GW Depth,GW_Level_m,6,16.6667,1.2247,0.6,0.2207,↑ Increasing,False
+Pali,NDVI,Mean_NDVI,-2,16.6667,-0.2449,-0.2,0.8065,↓ Decreasing,False
+Pali,Mining Area,Mining_Area_sqkm,-6,16.6667,-1.2247,-0.6,0.2207,↓ Decreasing,False
+Pali,Total Forest,Total_Forest,4,16.6667,0.7348,0.4,0.4624,↑ Increasing,False
+Pali,GW Depth,GW_Level_m,6,16.6667,1.2247,0.6,0.2207,↑ Increasing,False
+Udaipur,NDVI,Mean_NDVI,2,16.6667,0.2449,0.2,0.8065,↑ Increasing,False
+Udaipur,Mining Area,Mining_Area_sqkm,-10,16.6667,-2.2045,-1.0,0.0275,↓ Decreasing*,True
+Udaipur,Total Forest,Total_Forest,-4,16.6667,-0.7348,-0.4,0.4624,↓ Decreasing,False
+Udaipur,GW Depth,GW_Level_m,4,16.6667,0.7348,0.4,0.4624,↑ Increasing,False

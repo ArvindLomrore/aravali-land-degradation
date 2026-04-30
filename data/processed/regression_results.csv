@@ -1,0 +1,4 @@
+X_Variable,Y_Variable,Beta0,Beta1,Pearson_r,R_squared,t_statistic,p_value,Significant,n
+Mining_Area_sqkm,GW_Level_m,14.176133,0.026015,0.3,0.09,1.5084,0.1451,False,25
+Total_Forest,Mean_NDVI,0.273449,3.3e-05,0.683,0.4665,4.485,0.0002,True,25
+Mining_Area_sqkm,Mean_NDVI,0.319649,-0.000114,-0.3516,0.1236,-1.8013,0.0848,False,25
