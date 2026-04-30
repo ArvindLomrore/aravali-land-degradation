@@ -1,0 +1,8 @@
+pandas
+numpy
+matplotlib
+seaborn
+geopandas
+rasterio
+rasterstats
+sqlite3
