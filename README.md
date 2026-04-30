@@ -2,7 +2,7 @@
 Land degradation analysis of Aravali Hills, Rajasthan using satellite data, Mann-Kendall, regression, clustering, and a composite degradation index.
 # 🏔 Aravali Hills — Land Degradation Analysis
 
-> **CSXX Course Project — Deliverable 1 & 2**  
+> **DSC413 Course Project — Deliverable 1 & 2**  
 > Rajasthan, India · 5 Districts · 2015–2023
 
 ---
@@ -40,3 +40,31 @@ spanning 2015 to 2023.
    (r = +0.683, R² = 0.467, p = 0.0002)
 
 ## Repository Structure
+├── report/          → Combined D1+D2 Word report
+
+├── dashboard/       → Interactive HTML dashboard (open in browser)
+
+├── data/processed/  → All cleaned and analysed CSV outputs
+
+├── scripts/         → Python analysis scripts (Phase 1–2d)
+
+├── notebooks/       → Original D1 Jupyter notebook
+
+├── figures/         → All 14 publication-quality figures
+
+└── requirements.txt → Python dependencies
+
+## Interactive Dashboard
+
+Open `dashboard/aravali_dashboard.html` in any browser.  
+No installation required — all data is embedded.
+
+**Three tabs:**
+- **District Explorer** — time series + Mann-Kendall trends
+- **Correlation Explorer** — live scatter plots + regression
+- **Degradation Dashboard** — DI heatmap + risk ranking table
+
+## Report
+
+See `report/aravali_report.docx` for the full combined 
+Deliverable 1 + Deliverable 2 academic report.
